@@ -1,0 +1,162 @@
+{{define "template.user"}}
+
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>TokoDummy</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="{{.weburl}}/assets/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="{{.weburl}}/assets/css/blog-post.css" rel="stylesheet">
+    <script src="{{.weburl}}/assets/js/jquery.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="background-color: #40B649">
+      <div class="container">
+        <a class="navbar-brand" href="#">TokoDummy</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item active">
+              <a class="nav-link" href="/index">Home
+                <span class="sr-only">(current)</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Profile</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Shop</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{.weburl}}/logout">Logout</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="container">
+
+      <div class="row">
+
+        <!-- Post Content Column -->
+        <div class="col-lg-8">
+
+          <hr>
+
+          <!-- Single Comment -->
+          <div class="card my-8">
+            <h5 class="card-header">Profile</h5>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-lg-6">
+                     <div id="userdata"></div>
+                  </div>  
+                </div>
+              </div>
+          </div>
+        </div>
+        <!-- Sidebar Widgets Column -->
+        <div class="col-md-4">
+          <hr>
+          <!-- Categories Widget -->
+          <div class="card my-4">
+            <h5 class="card-header">Kategori</h5>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-lg-6">
+                  <ul class="list-unstyled mb-0">
+                    <li>
+                      <a href="#" style="color:#40B649">Fashion</a>
+                    </li>
+                    <li>
+                      <a href="#" style="color:#40B649">Elektronik</a>
+                    </li>
+                    <li>
+                      <a href="#" style="color:#40B649">Olahraga</a>
+                    </li>
+                  </ul>
+                </div>
+                <div class="col-lg-6">
+                  <ul class="list-unstyled mb-0">
+                    <li>
+                      <a href="#" style="color:#40B649">Rumah Tangga</a>
+                    </li>
+                    <li>
+                      <a href="#" style="color:#40B649">Ibu & Bayi</a>
+                    </li>
+                    <li>
+                      <a href="#" style="color:#40B649">Otomotif</a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+      <!-- /.row -->
+
+    </div>
+    <!-- /.container -->
+
+    <!-- Footer -->
+    <!-- <footer class="py-5 bg-dark">
+      <div class="container">
+        <p class="m-0 text-center text-white">Copyright &copy; Tokopedia IT Security Pentest 2018</p>      </div>
+    </footer> -->
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="{{.weburl}}/assets/js/bootstrap.bundle.min.js"></script>
+    <script>
+      function GetURLParameter(sParam)
+          {
+          var sPageURL = window.location.search.substring(1);
+          var sURLVariables = sPageURL.split('&');
+          for (var i = 0; i < sURLVariables.length; i++)
+          {
+              var sParameterName = sURLVariables[i].split('=');
+              if (sParameterName[0] == sParam)
+              {
+                  return sParameterName[1];
+              }
+          }
+        }
+      $(document).ready(function() {
+        var userenp = "/user"
+        data = {
+          "uid" : GetURLParameter("idu")
+        }
+         $.post(userenp, data)
+         .done(function(data){
+           if(data[0].success == "1")
+            var html = ""
+            html += "<p>Name : "+data[0].data.username+"</p>"
+            html += "<p>Email : "+data[0].data.email+"</p>"
+            html += "<p>Phone Number : "+data[0].data.msisdn+"</p>"
+            $("#userdata").html(html)
+         })
+      });
+    </script>
+  </body>
+
+</html>
+
+{{end}}

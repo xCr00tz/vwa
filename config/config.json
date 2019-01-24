@@ -1,0 +1,9 @@
+{
+    "user": "postgres",
+    "password": "helloworld",
+    "dbname": "vwa",
+    "sqlhost": "postgres",
+    "sqlport": "5432",
+    "webserver": "http://localhost",
+    "webport": "8080"
+}

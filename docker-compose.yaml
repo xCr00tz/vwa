@@ -1,0 +1,41 @@
+version: '3'
+services:
+  postgres:
+    image: postgres:10.6
+    container_name: postgres_db
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=helloworld
+      - POSTGRES_DB=vwa
+    tty: true
+    restart: always
+    user: postgres
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d
+  pgweb:
+    image: sosedoff/pgweb
+    container_name: pgweb
+    ports: 
+      - "8081:8081"
+    environment:
+      - DATABASE_URL=postgres://postgres:helloworld@postgres:5432/vwa?sslmode=disable
+    links: 
+      - postgres:postgres
+    restart: always
+    depends_on:
+      - postgres
+  app:
+    image: golang:1.8
+    container_name: golang_main
+    build: .
+    command: ["go", "run", "app.go"]
+    volumes:
+      - .:/go/src/vwa
+    ports:
+      - 8080:8080
+    depends_on:
+      - postgres
+    links:
+      - postgres:postgres
