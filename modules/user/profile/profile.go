@@ -1,21 +1,19 @@
 package profile
 
 import (
-
-	"log"
 	"fmt"
+	"log"
 	"net/http"
 
 	"crypto/md5"
 	"encoding/hex"
+	"vwa/helper/middleware"
+	"vwa/util/database"
 	"vwa/util/render"
 	"vwa/util/session"
-	"vwa/util/database"
-	"vwa/helper/middleware"
 
 	"github.com/julienschmidt/httprouter"
 )
-
 
 type Self struct{}
 
@@ -36,44 +34,43 @@ func (self *Self) SetRouter(r *httprouter.Router) {
 
 }
 
-var DB,_ = database.Connect()
+var DB, _ = database.Connect()
 
-type UserData struct{
-	UserID 		string `json:"uid"`
-	UserName 	string `json:"username"`
-	Email 		string `json:"email"`
-	MSISDN		string `json:"msisdn"`
+type UserData struct {
+	UserID   string `json:"uid"`
+	UserName string `json:"username"`
+	Email    string `json:"email"`
+	MSISDN   string `json:"msisdn"`
 }
 
-type Jsonresp struct{
-		Success string `json:"success"`
-		Data *UserData `json:"data"`
-		Message string `json:"message"`
+type Jsonresp struct {
+	Success string    `json:"success"`
+	Data    *UserData `json:"data"`
+	Message string    `json:"message"`
 }
 
+func UserHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
-func UserHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params){
-	
-	data 	:= make(map[string]interface{})
-	nama 	:= r.URL.Query()["user"][0]
-	data["title"] 		= "User Profile"
-	data["nama_user"] 	= nama
+	data := make(map[string]interface{})
+	nama := r.URL.Query()["user"][0]
+	data["title"] = "User Profile"
+	data["nama_user"] = nama
 
-	render.HTMLRender(w,r, "template.user", data)
+	render.HTMLRender(w, r, "template.user", data)
 
 }
 
-func GetUserHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params){
-	if r.Method == "POST"{
+func GetUserHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	if r.Method == "POST" {
 		uid := r.FormValue("uid")
 		respdata, err := GetUserData(uid)
-		if err != nil{
+		if err != nil {
 			resp := Jsonresp{}
 			resp.Success = "0"
 			resp.Data = respdata
 			resp.Message = err.Error()
 			render.JSONRender(w, resp)
-		}else{
+		} else {
 			resp := Jsonresp{}
 			resp.Success = "1"
 			resp.Data = respdata
@@ -83,16 +80,16 @@ func GetUserHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params)
 	}
 }
 
-func ProfileHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params){
-	
+func ProfileHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+
 	sess := session.New()
 	data := make(map[string]interface{})
 
-	if sess.IsLoggedIn(r){
-		uid := sess.GetSession(r,"id")
+	if sess.IsLoggedIn(r) {
+		uid := sess.GetSession(r, "id")
 		userdata, err := GetProfile(uid)
 
-		if err != nil{
+		if err != nil {
 			log.Println(err.Error())
 		}
 
@@ -101,105 +98,110 @@ func ProfileHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params)
 		data["email"] = userdata.Email
 		data["name"] = userdata.UserName
 		data["msisdn"] = userdata.MSISDN
-	}else{
+	} else {
 		data["title"] = "Profile"
 	}
-	
 
-	render.HTMLRender(w,r, "template.profile", data)
+	render.HTMLRender(w, r, "template.profile", data)
 
 }
 
-
-func UpdateProfileHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params){
+func UpdateProfileHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	sess := session.New()
 	resp := Jsonresp{}
 
-	if sess.IsLoggedIn(r){
-		if r.Method == "POST"{
-			uid 	:= sess.GetSession(r,"id")
-			name 	:= r.FormValue("name")
-			email 	:= r.FormValue("email")
-			msisdn 	:= r.FormValue("msisdn")
+	if sess.IsLoggedIn(r) {
+		if r.Method == "POST" {
+			uid := sess.GetSession(r, "id")
+			name := r.FormValue("name")
+			email := r.FormValue("email")
+			msisdn := r.FormValue("msisdn")
 			ok := updateProfile(uid, name, email, msisdn)
-			if !ok{
+			if !ok {
 				resp.Success = "0"
 				resp.Message = "Gagal menperbaharui data"
-			}else{
+			} else {
 				resp.Success = "1"
 				resp.Message = "Data berhasil diperbaharui"
 			}
 		}
-	}else{
+	} else {
 		resp.Message = "0"
 		resp.Message = "Login untuk dapat memperbaharui data"
 	}
 	render.JSONRender(w, resp)
 }
 
-func UpdatePasswordHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params){
+func UpdatePasswordHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	sess := session.New()
 	resp := Jsonresp{}
 
-	if sess.IsLoggedIn(r){
-		if r.Method == "POST"{
-			uid 			:= r.FormValue("uid")
-			password_baru 	:= r.FormValue("password_baru")
-			
-			ok := updatePassword(uid, password_baru)
-			if !ok{
+	if sess.IsLoggedIn(r) {
+		if r.Method == "POST" {
+			uid := r.FormValue("uid")
+			password_lama := Md5Sum(r.FormValue("password_lama"))
+			password_baru := r.FormValue("password_baru")
+			old := checkPassword(uid, password_lama)
+
+			if old != "1" {
 				resp.Success = "0"
-				resp.Message = "Gagal Mengganti Password"
-			}else{
-				resp.Success = "1"
-				resp.Message = "Password Berhasil Diganti"
+				resp.Message = "Password Lama Salah!"
+			} else {
+				ok := updatePassword(uid, password_baru)
+				if !ok {
+					resp.Success = "0"
+					resp.Message = "Gagal Mengganti Password"
+				} else {
+					resp.Success = "1"
+					resp.Message = "Password Berhasil Diganti"
+				}
 			}
 		}
-	}else{
+	} else {
 		resp.Message = "0"
 		resp.Message = "Login untuk dapat memperbaharui data"
 	}
 	render.JSONRender(w, resp)
 }
 
-func GetUserData(uid string)(*UserData, error){
-	
+func GetUserData(uid string) (*UserData, error) {
+
 	query := fmt.Sprintf("SELECT username, email, phone_number FROM users where id=%s", uid)
-	userdata := UserData{} 
+	userdata := UserData{}
 	stmt := DB.QueryRow(query)
 
 	err := stmt.Scan(&userdata.UserName, &userdata.Email, &userdata.MSISDN)
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 	return &userdata, nil
 }
 
-func GetProfile(uid string)(*UserData, error){
+func GetProfile(uid string) (*UserData, error) {
 	const (
 		query = `SELECT username, email, phone_number FROM users where id=$1`
 	)
 	userdata := UserData{}
 
-	stmt,err := DB.Prepare(query)
-	if err != nil{
+	stmt, err := DB.Prepare(query)
+	if err != nil {
 		return nil, err
 	}
 	defer stmt.Close()
 
 	err = stmt.QueryRow(uid).Scan(&userdata.UserName, &userdata.Email, &userdata.MSISDN)
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 	return &userdata, nil
 }
 
-func updateProfile(uid string, name string, email string, phone_number string)bool{
+func updateProfile(uid string, name string, email string, phone_number string) bool {
 	const (
 		query = `UPDATE users SET username=$1, email=$2, phone_number=$3 where id = $4`
 	)
 	_, err := DB.Exec(query, name, email, phone_number, uid)
-	if err != nil{
+	if err != nil {
 		log.Println(err.Error())
 		return false
 	}
@@ -212,31 +214,47 @@ func Md5Sum(text string) string {
 	return hex.EncodeToString(hasher.Sum(nil))
 }
 
+func checkPassword(uid, password_lama string) string {
+	var jumlah string
 
-func updatePassword(uid string, password_baru string)bool{
+	stmt, err := DB.Prepare("SELECT COUNT(*) as jumlah FROM users WHERE id=$1 AND password=$2")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer stmt.Close()
+	err = stmt.QueryRow(uid, password_lama).Scan(&jumlah)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println(jumlah)
+	return jumlah
+}
+func updatePassword(uid string, password_baru string) bool {
 	const (
 		query = `UPDATE users SET password=$1 where id = $2`
 	)
 	_, err := DB.Exec(query, Md5Sum(password_baru), uid)
-	if err != nil{
+	if err != nil {
 		log.Println(err.Error())
 		return false
 	}
 	return true
 }
 
-type Resp struct{
+type Resp struct {
 	Body string `json:"body"`
 }
 
-func Verify_User(w http.ResponseWriter, r *http.Request, ps httprouter.Params){
+func Verify_User(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	s := session.New()
-	if s.IsLoggedIn(r) == false{
-		
+	if s.IsLoggedIn(r) == false {
+
 		html := `<div class="alert alert-warning">Silahkan <strong>login</strong> untuk melihat halaman ini</div>`
 		resp := Resp{}
 		resp.Body = html
-		render.JSONRender(w,resp)
+		render.JSONRender(w, resp)
 
 	}
 }

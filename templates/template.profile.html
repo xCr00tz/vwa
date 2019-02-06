@@ -15,16 +15,19 @@
     <link rel="shortcut icon"href="{{.weburl}}/assets/imgs/favicon.ico">
     <!-- Bootstrap core CSS -->
     <link href="{{.weburl}}/assets/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{.weburl}}/assets/lib/font-awesome/css/font-awesome.min.css" rel="stylesheet">
     <!-- Custom styles for this template -->
     <link href="{{.weburl}}/assets/css/blog-post.css" rel="stylesheet">
     <script src="{{.weburl}}/assets/js/jquery.min.js"></script>
+    <link href="{{.weburl}}/assets/lib/sweetalert/sweetalert.css" rel="stylesheet">
+    <script src="{{.weburl}}/assets/lib/sweetalert/sweetalert.min.js"></script>
   </head>
   <body>
 
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="background-color: #40B649">
       <div class="container">
-        <a class="navbar-brand" href="{{.weburl}}">Tøkōpëdiâ</a>
+        <a class="navbar-brand" href="/">Tøkōpëdiâ</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -39,7 +42,7 @@
               <a class="nav-link" href="/profile">Profile</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#">Shop</a>
+                <a class="nav-link" href="/product">Product</a>
             </li>
             <li class="nav-item" id="logout_atas">
             </li>
@@ -60,7 +63,7 @@
 
           <!-- Single Comment -->
           <div class="card my-8">
-            <h5 class="card-header">Profile Pribadi</h5>
+            <h5 class="card-header"><i class="fa fa-user"></i> Profile Pribadi</h5>
               <div class="card-body" id="halaman_utama">
                 <div id="message"></div> 
                 <div class="row">
@@ -89,7 +92,7 @@
                        <div class="form-group row">
                           <label for="name" class="col-4 col-form-label"></label>
                           <div class="col-8">
-                              <button type="submit" class="btn btn-success" id="updateprofile">Update Profile</button>
+                              </strong><button type="submit" class="btn btn-success" id="updateprofile"><i class="fa fa-user-o"></i> <strong>Update Profile</strong></button>
                             </div>
                           </div>
                      </div>
@@ -101,17 +104,23 @@
                     <div>
                        <form role="form" id="passwordform" method="post">
                         <div class="form-group row">
-                              <label for="name" class="col-4 col-form-label">Password Baru :</label>
-                              <div class="col-8">
-                                  <input class="form-control" type="hidden" name="uid" value="{{.uid}}" id="uid">
-                                <input class="form-control" name="password_baru" type="password" value="" id="password_baru">
-                              </div>
-                          </div>
+                            <label for="name" class="col-4 col-form-label">Password Lama :</label>
+                            <div class="col-8">
+                                <input class="form-control" type="hidden" name="uid" value="{{.uid}}" id="uid">
+                              <input class="form-control" name="password_lama" type="password" value="" id="password_lama">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="name" class="col-4 col-form-label">Password Baru :</label>
+                            <div class="col-8">
+                              <input class="form-control" name="password_baru" type="password" value="" id="password_baru">
+                            </div>
+                        </div>
                        </form>
                        <div class="form-group row">
                         <label for="name" class="col-4 col-form-label"></label>
                         <div class="col-8">
-                            <button type="submit" class="btn btn-success" id="updatepassword">Ganti Password</button>
+                            <button type="submit" class="btn btn-success" id="updatepassword"><i class="fa fa-lock"></i> <strong>Ganti Password</strong></button>
                           </div>
                         </div>
                     </div>
@@ -167,7 +176,7 @@
     <!-- Footer -->
     <!--<footer class="py-5 bg-dark">
       <div class="container">
-        <p class="m-0 text-center text-white">Copyright &copy; Tøkōpëdiâ IT Security Pentest 2018</p>      </div>
+        <p class="m-0 text-center text-white">Copyright &copy; Tøkōpëdiâ IT Security Pentest 2019</p>      </div>
     </footer>-->
 
     <!-- Bootstrap core JavaScript -->
@@ -221,25 +230,34 @@
 
         var api_pass  = "/password"
         var html_pass = ""
+        $("#message").html("");
         $("#updatepassword").on('click', function(){
+          pass_lama = $("#password_lama").val()
           val_pass  = $("#password_baru").val()
           data_pass = $("#passwordform").serialize()
-          if(val_pass == ""){
-            html_pass = "<div class=\"alert alert-danger\">Password baru belum diisi..</div>"
+          if(pass_lama == "" && val_pass == ""){
+            swal("Oops!", "Password Baru & Lama Belum di isi!", "error");
+          }else if(val_pass == ""){
+            //html_pass = "<div class=\"alert alert-danger\">Password baru belum diisi..</div>"
+            swal("Oops!", "Password Baru Belum di isi!", "error");
+          }else if(pass_lama == ""){
+            swal("Oops!", "Password Lama Belum di isi!", "error");
           }else{
             $.post(api_pass, data_pass)
             .done(function(response){
               if(response[0].success == "1"){
-                html_pass = "<div class=\"alert alert-success\">"+response[0].message+"</div>"
+                swal("Done!", "Password berhasil di update!", "success");
+                $("#password_lama").val("")
+                $("#password_baru").val("")
+                //html_pass = "<div class=\"alert alert-success\">"+response[0].message+"</div>"
               }else{
-                html_pass = "<div class=\"alert alert-danger\">"+response[0].message+"</div>"
+                swal("Oops!", response[0].message, "error");
+                //html_pass = "<div class=\"alert alert-danger\">"+response[0].message+"</div>"
               }
             })
           }
-          $("#message").html(html_pass);
-          $("#message").slideDown();
-          $("#message").delay(2000).slideUp();
-          
+          //$("#message").html(html_pass);
+          //$("#message").slideDown();
         })
         
       });

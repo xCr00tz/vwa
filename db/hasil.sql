@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 10.6 (Ubuntu 10.6-0ubuntu0.18.04.1)
+-- Dumped from database version 10.6 (Debian 10.6-1.pgdg90+1)
 -- Dumped by pg_dump version 10.6 (Ubuntu 10.6-0ubuntu0.18.04.1)
 
 SET statement_timeout = 0;
@@ -68,6 +68,23 @@ ALTER SEQUENCE public.komentar_id_komentar_seq OWNED BY public.komentar.id_komen
 
 
 --
+-- Name: product; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.product (
+    id_product integer NOT NULL,
+    foto_product text NOT NULL,
+    judul_product text NOT NULL,
+    deskripsi_product text NOT NULL,
+    terjual integer NOT NULL,
+    disukai integer NOT NULL,
+    harga integer NOT NULL
+);
+
+
+ALTER TABLE public.product OWNER TO postgres;
+
+--
 -- Name: users; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -124,6 +141,23 @@ ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_
 COPY public.komentar (id_komentar, isi_komentar, id_user) FROM stdin;
 1	barang ready gan?	2
 2	bisa gosend hari ini gan?	1
+\.
+
+
+--
+-- Data for Name: product; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.product (id_product, foto_product, judul_product, deskripsi_product, terjual, disukai, harga) FROM stdin;
+1	product_1.jpg	iPhone XR  128GB	HP iPhone	69	150	12700000
+2	product_2.jpg	Samsung Galaxy A7	HP Samsung	40	200	4600000
+3	product_3.jpg	iPad Pro	iPad	25	100	14000000
+4	product_4.jpg	iPhone X 256GB	HP iPhone	33	340	15700000
+5	product_5.jpg	iPhone 8 128GB	HP iPhone	75	122	10200000
+6	product_6.jpg	iPhone 6S	iPhone	98	350	5000000
+7	product_7.jpg	Macbook Air MQD32	Macbook	20	110	17200000
+8	product_8.jpg	iPad Mini 4	iPad	56	146	7700000
+9	product_9.jpg	Apple Watch Series 4	iWatch	77	240	7000000
 \.
 
 

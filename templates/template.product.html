@@ -1,0 +1,230 @@
+{{define "template.product"}}
+
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>{{.title}} - Tøkōpëdiâ</title>
+
+    <link rel="shortcut icon"href="{{.weburl}}/assets/imgs/favicon.ico">
+    <!-- Bootstrap core CSS -->
+    <link href="{{.weburl}}/assets/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{.weburl}}/assets/lib/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="{{.weburl}}/assets/css/blog-post.css" rel="stylesheet">
+    <script src="{{.weburl}}/assets/js/jquery.min.js"></script>
+    <link href="{{.weburl}}/assets/lib/sweetalert/sweetalert.css" rel="stylesheet">
+    <script src="{{.weburl}}/assets/lib/sweetalert/sweetalert.min.js"></script>
+  </head>
+  <body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="background-color: #40B649">
+      <div class="container">
+        <a class="navbar-brand" href="/">Tøkōpëdiâ</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="/index">Home
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/profile">Profile</a>
+            </li>
+            <li class="nav-item active">
+              <a class="nav-link" href="/product">Product</a>
+              <span class="sr-only">(current)</span>
+            </li>
+            <li class="nav-item" id="logout_atas">
+              
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="container">
+        <br>
+        <div class="row">
+            <div class="col col-lg-4">
+                <div class="form-group">
+                    <strong><label for="sort_by">Urutkan : </label></strong>
+                    <select class="form-control" id="urutkan" name="urutkan">
+                        <option value="">-- Pilih --</option>
+                        <option value="terjual">Penjualan</option>
+                        <option value="disukai">Disukai</option>
+                        <option value="harga">Harga</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                        <strong><label for="sort_by">Berdasarkan : </label></strong>
+                    <select class="form-control" id="berdasar" name="berdasar">
+                        <option value="">-- Pilih --</option>
+                        <option value="desc">Paling Banyak</option>
+                        <option value="asc">Paling Sedikit</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col col-lg-4">
+                    <div class="form-group">
+                        <strong><label for="sort_by">Filter Range : </label></strong>
+                        <select class="form-control" id="filter" name="filter">
+                            <option value="">-- Pilih Filter --</option>
+                            <option value="terjual">Penjualan</option>
+                            <option value="disukai">Disukai</option>
+                            <option value="harga">Harga</option>
+                        </select>
+                    </div>
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                                <strong><label for="dari">Dari</label></strong>
+                            <input type="number" class="form-control" id="dari" name="dari" placeholder="0" value="0">
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                                <strong><label for="hingga">Hingga</label></strong>
+                            <input type="number" class="form-control" id="hingga" name="hingga" placeholder="0" value="0">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col col-lg-4">
+                <div class="form-group">
+                    <strong><label for="hingga">Pencarian : </label></strong>
+                    <input type="text" class="form-control" id="pencarian" name="pencarian" placeholder="Cari nama produk...">
+                </div>
+                <div class="form-group">
+                    <label for="hingga">&nbsp;</label>
+                    <button id="btnCari" class="btn btn-success btn-small btn-block"><i class="fa fa-search"></i> <strong>Cari</strong></button>
+                </div>
+            </div>
+            
+        </div>
+        <hr>
+        <div class="col col-12" id="loading_pencarian">
+            <div class="text-center"><br>
+            <center>
+            <div class="spinner-border text-success" role="status">
+                <span class="sr-only"></span>
+            </div><br><br>
+            <strong>Pencarian...</strong>
+            </center>
+            </div>
+        </div>
+        <div class="row" id="list_product">
+        </div>
+    </div>
+    <!-- /.container -->
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="{{.weburl}}/assets/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toRupiah(bilangan){
+            var	number_string = bilangan.toString(),
+                sisa 	= number_string.length % 3,
+                rupiah 	= number_string.substr(0, sisa),
+                ribuan 	= number_string.substr(sisa).match(/\d{3}/g);
+                    
+            if (ribuan) {
+                separator = sisa ? '.' : '';
+                rupiah += separator + ribuan.join('.');
+            }
+            return rupiah
+        }
+        function proses_cari(){
+            var urutkan     = $("#urutkan").val(),
+                berdasar    = $("#berdasar").val(),
+                filter      = $("#filter").val(),
+                dari        = parseInt($("#dari").val()),
+                hingga      = parseInt($("#hingga").val()),
+                pencarian   = $("#pencarian").val(),
+                params      = "";   
+            if(urutkan != ""){
+                if(berdasar == ""){
+                    swal("Oops!", "Filter Berdasarkan belum dipilih!", "error");
+                }else{
+                    params += "urutkan="+urutkan+"&berdasar="+berdasar
+                }
+            }
+            if(filter != ""){
+                if(hingga <= dari){
+                    swal("Oops!", "Value range filter kurang tepat!", "error");
+                }else{
+                    if(params != ""){
+                        params += "&"
+                    }
+                    params += "filter="+filter+"&dari="+dari+"&hingga="+hingga
+                    
+                }
+            }
+            if(pencarian != ""){
+                if(params != ""){
+                    params += "&"
+                }
+                params += "pencarian="+pencarian
+            }
+            if(params != ""){
+                params = "?"+params
+            }
+            
+            var fetchproducturl = "{{.weburl}}/cari_product"+params
+            var html = ""
+            console.log(fetchproducturl)
+            $.get(fetchproducturl, function(data) {
+                $.each(data[0].data, function(k,v){
+                html += '<div class="col-md-4">'
+                html += '<div class="card mb-4 shadow-sm">'
+                html += '<img class="card-img-top" style="height: 340px; width: 100%; display: block;" src="assets/img/'+v.fotoproduct+'" data-holder-rendered="true">'
+                html += '<div class="card-body"><p class="card-text">'+v.judulproduct+'</p>'
+                html += '<div class="d-flex justify-content-between align-items-center"><div class="btn-group"><button type="button" class="btn btn-sm btn-outline-secondary"><i class="fa fa-heart"></i> '+v.disukai+' Liked</button>'
+                html += '<button type="button" class="btn btn-sm btn-outline-secondary"><i class="fa fa-shopping-bag"></i> '+v.terjual+' Terjual</button></div>' 
+                html += '<small class="text-muted"><strong>Rp '+toRupiah(v.harga)+'</strong></small></div></div></div></div>'
+              })
+              var jumlah = data[0].data.length
+              if(jumlah == 0){
+                  html += "<div class='col col-12'><br><center><strong><h4>Oops, produk tidak ditemukan ☹</h4></strong><br>Hasil pencarian tidak ditemukan. Coba pencarian lain?</center></div>"
+              }
+              $("#loading_pencarian").slideUp();
+              $("#list_product").fadeIn();
+              $("#list_product").html(html) 
+            });
+        }
+        function bundle_click(){
+            $("#loading_pencarian").fadeIn();
+            $("#list_product").html("");
+            $("#list_product").fadeOut();
+            setTimeout(function(){
+                proses_cari()
+            }, 300); 
+        }
+        proses_cari()
+        $("#btnCari").on('click',function(){
+            bundle_click()
+        });
+        $('#pencarian').keypress(function(e) {
+            if (e.which == 13) {
+                bundle_click()
+            }
+        });
+        var baseurl = "{{.weburl}}/verify"
+        $.get(baseurl, function(data){
+            $("#logout_atas").html(data[0].atas)
+        });
+    </script>
+  </body>
+
+</html>
+
+{{end}}
