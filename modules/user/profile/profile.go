@@ -139,22 +139,14 @@ func UpdatePasswordHandler(w http.ResponseWriter, r *http.Request, _ httprouter.
 	if sess.IsLoggedIn(r) {
 		if r.Method == "POST" {
 			uid := r.FormValue("uid")
-			password_lama := Md5Sum(r.FormValue("password_lama"))
-			password_baru := r.FormValue("password_baru")
-			old := checkPassword(uid, password_lama)
-
-			if old != "1" {
+			password_lama := r.FormValue("password_lama")
+			ok := updatePassword(uid, password_lama)
+			if !ok {
 				resp.Success = "0"
-				resp.Message = "Password Lama Salah!"
+				resp.Message = "Gagal Mengganti Password"
 			} else {
-				ok := updatePassword(uid, password_baru)
-				if !ok {
-					resp.Success = "0"
-					resp.Message = "Gagal Mengganti Password"
-				} else {
-					resp.Success = "1"
-					resp.Message = "Password Berhasil Diganti"
-				}
+				resp.Success = "1"
+				resp.Message = "Password Berhasil Diganti"
 			}
 		}
 	} else {
@@ -214,23 +206,6 @@ func Md5Sum(text string) string {
 	return hex.EncodeToString(hasher.Sum(nil))
 }
 
-func checkPassword(uid, password_lama string) string {
-	var jumlah string
-
-	stmt, err := DB.Prepare("SELECT COUNT(*) as jumlah FROM users WHERE id=$1 AND password=$2")
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer stmt.Close()
-	err = stmt.QueryRow(uid, password_lama).Scan(&jumlah)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println(jumlah)
-	return jumlah
-}
 func updatePassword(uid string, password_baru string) bool {
 	const (
 		query = `UPDATE users SET password=$1 where id = $2`

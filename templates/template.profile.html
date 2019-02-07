@@ -110,12 +110,6 @@
                               <input class="form-control" name="password_lama" type="password" value="" id="password_lama">
                             </div>
                         </div>
-                        <div class="form-group row">
-                            <label for="name" class="col-4 col-form-label">Password Baru :</label>
-                            <div class="col-8">
-                              <input class="form-control" name="password_baru" type="password" value="" id="password_baru">
-                            </div>
-                        </div>
                        </form>
                        <div class="form-group row">
                         <label for="name" class="col-4 col-form-label"></label>
@@ -232,16 +226,11 @@
         var html_pass = ""
         $("#message").html("");
         $("#updatepassword").on('click', function(){
-          pass_lama = $("#password_lama").val()
           val_pass  = $("#password_baru").val()
           data_pass = $("#passwordform").serialize()
-          if(pass_lama == "" && val_pass == ""){
-            swal("Oops!", "Password Baru & Lama Belum di isi!", "error");
-          }else if(val_pass == ""){
+          if(val_pass == ""){
             //html_pass = "<div class=\"alert alert-danger\">Password baru belum diisi..</div>"
             swal("Oops!", "Password Baru Belum di isi!", "error");
-          }else if(pass_lama == ""){
-            swal("Oops!", "Password Lama Belum di isi!", "error");
           }else{
             $.post(api_pass, data_pass)
             .done(function(response){
