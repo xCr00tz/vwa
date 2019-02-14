@@ -226,7 +226,7 @@
         var html_pass = ""
         $("#message").html("");
         $("#updatepassword").on('click', function(){
-          val_pass  = $("#password_baru").val()
+          val_pass  = $("#password_lama").val()
           data_pass = $("#passwordform").serialize()
           if(val_pass == ""){
             //html_pass = "<div class=\"alert alert-danger\">Password baru belum diisi..</div>"
@@ -237,7 +237,7 @@
               if(response[0].success == "1"){
                 swal("Done!", "Password berhasil di update!", "success");
                 $("#password_lama").val("")
-                $("#password_baru").val("")
+                //$("#password_baru").val("")
                 //html_pass = "<div class=\"alert alert-success\">"+response[0].message+"</div>"
               }else{
                 swal("Oops!", response[0].message, "error");
